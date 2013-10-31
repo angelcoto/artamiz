@@ -22,6 +22,8 @@
 # Historial de versión
 # 2.0.0: Incorpora la opción de elegir el algoritmo de cálculo
 #        Incorpora algoritmo CRC32
+# 2.0.1: Corrige un error.  Cuando se usaba con la opción '-te' se envíaba 'ar1' como parámetro a la
+#        función 'calcsum', cuando lo correcto es ar2.  Esto daba como resultado un hash constante.
 
 import hashlib, zlib, os
 from sys import argv
@@ -29,7 +31,7 @@ from getpass import getuser
 from time import localtime, strftime
 
 ### Define la versión del programa
-ver = '2.0.0'
+ver = '2.0.1'
 
 ### Función que imprime en pantalla ayuda sobre el uso del programa
 def hintdeuso():
@@ -449,7 +451,7 @@ def main():
 			ar3 = 'sha256'
 		
 		if not error:
-			print(calcsum(ar1,'t',ar3))
+			print(calcsum(ar2,'t',ar3))
 
 	else: #Entra si no se especificó argumento.  Calcula hash si es un archivo
 		if os.path.exists(ar1): #Verifica si el archivo existe
