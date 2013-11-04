@@ -37,7 +37,7 @@ ver = '2.0.1'
 def hintdeuso():
 	programa = os.path.basename(argv[0]) #Extrae el nombre del programa (tiene utilidad en Windows)
 	print('\n {0} {1}.'.format(programa,ver))
-	print(' Copyright (c) 2012 Ángel Coto <codiasw@gmail.com>.\n')
+	print(' Copyright (c) 2012-2013 Ángel Coto <codiasw@gmail.com>.\n')
 	print(' Calcula y verifica valores hash para archivos.  Algoritmo por defecto es sha256.')
 	print(' Puede especificar opcionalmente crc32, md5 ó sha1.\n')
 	print(' Uso: python {0} ?'.format(programa))
