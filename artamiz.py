@@ -24,6 +24,7 @@
 #        Incorpora algoritmo CRC32
 # 2.0.1: Corrige un error.  Cuando se usaba con la opción '-te' se envíaba 'ar1' como parámetro a la
 #        función 'calcsum', cuando lo correcto es ar2.  Esto daba como resultado un hash constante.
+# 2.0.2: Valida cuando un directorio no puede ser accedido.  Produce el error 15.
 
 import hashlib, zlib, os
 from sys import argv
@@ -31,7 +32,7 @@ from getpass import getuser
 from time import localtime, strftime
 
 ### Define la versión del programa
-ver = '2.0.1'
+ver = '2.0.2'
 
 ### Función que imprime en pantalla ayuda sobre el uso del programa
 def hintdeuso():
@@ -82,6 +83,7 @@ error11 = "* Error 11: '{0}' no tiene líneas con estructura de tabla hash."
 error12 = "* Error 12: '{0}' está siendo usado por otro proceso en forma exclusiva o ha sido removido."
 error13 = "* Error 13: Debe especificar archivo de tabla hash."
 error14 = "* Error 14: Debe especificar cadena de texto."
+error15 = "* Error 15: No se puede abrir el directorio {0}."
 
 ### Función para imprimir encabezado de tabla de resultados de verificación
 def encabezadotablaverif(archivo, directorio, modo):
@@ -191,21 +193,29 @@ def calcsum(objeto,tipoobjeto,algoritmo):
 #  @param: directorio en el cual están los archivos a los cuale se les calculará hash
 #  @return: ninguno
 def calcsumdir(ruta,algoritmo):
-	listado = os.listdir(ruta) #Extrae el listado de archivos del directorio
-	listado.sort() #Ordena los elementos de la lista para mejor lectura de la salida
 	errores = []
+	error = False
+	try:
+		listado = os.listdir(ruta) #Extrae el listado de archivos del directorio
+	except:
+		errores.append(error15.format(ruta))
+		error = True
 	
-	for archivo in listado: #Recorre el listado de elementos en el directorio
-		if os.path.isfile(archivo): #Verifica si el elemento es un archivo
-			if os.access(archivo,os.R_OK):
-				if not enllavado(archivo):
-					print(calcsum(archivo,'f',algoritmo)+' *'+archivo)
+	if not error:
+	
+		listado.sort() #Ordena los elementos de la lista para mejor lectura de la salida
+		
+		for archivo in listado: #Recorre el listado de elementos en el directorio
+			if os.path.isfile(archivo): #Verifica si el elemento es un archivo
+				if os.access(archivo,os.R_OK):
+					if not enllavado(archivo):
+						print(calcsum(archivo,'f',algoritmo)+' *'+archivo)
+					else:
+						print(error12.format(archivo))
 				else:
-					print(error12.format(archivo))
+					 errores.append(error4.format(archivo)) #Incorpora el mensaje de error al listado de errores
 			else:
-				 errores.append(error4.format(archivo)) #Incorpora el mensaje de error al listado de errores
-		else:
-			errores.append(error3.format(archivo))  #Si es directorio solo lo informa
+				errores.append(error3.format(archivo))  #Si es directorio solo lo informa
 			
 	for mensaje in errores:
 		print(mensaje)
@@ -218,13 +228,26 @@ def calcsumdir(ruta,algoritmo):
 def calcsumdirrec(ruta, algoritmo):
 	
 	if os.path.isdir(ruta):
-		os.chdir(ruta) # Cambia al directorio
-		directorio = os.getcwd()
-		listado = os.listdir(directorio) #Obtiene los elementos del directorio
+		error = False
+		try:
+			os.chdir(ruta) # Cambia al directorio
+		except:
+			print(error15.format(ruta))
+			error = True
 		
-		for nombre in listado: #Para cada nombre en el listado
-			elemento = os.path.join(directorio,nombre) #Construye la ruta completa
-			calcsumdirrec(elemento,algoritmo)
+		if not error:
+			directorio = os.getcwd()
+			try:
+				listado = os.listdir(directorio) #Obtiene los elementos del directorio
+			except:
+				print(error15.format(ruta))
+				error = True
+				
+			if not error:
+				for nombre in listado: #Para cada nombre en el listado
+					elemento = os.path.join(directorio,nombre) #Construye la ruta completa
+					calcsumdirrec(elemento,algoritmo)
+
 	else:
 		if os.access(ruta,os.R_OK):
 			if not enllavado(ruta):
